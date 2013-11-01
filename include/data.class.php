@@ -8,6 +8,7 @@
 	*/
 	class SimpleData{
 		var $db_dir;
+		var $php_prefix = '<?php exit();?>';
 		public function __construct($db_dir){
 			//构造函数，创建目录，判断权限
 			if(!is_dir($db_dir)){
@@ -22,7 +23,7 @@
 		public function write($db_name,$data){
 			//写入一个文件
 			$dbfile = $this->get_db_file($db_name);
-			$data = '<?php return unserialize("'.addslashes(serialize($data)).'");';
+			$data = $this->php_prefix.serialize($data);
 			file_put_contents($dbfile,$data);
 		}
 		public function read($db_name){
@@ -30,7 +31,8 @@
 			if(!is_file($dbfile)){
 				return false;
 			}
-			return include $dbfile;
+			$data = file_get_contents($dbfile);
+			return unserialize(substr($data, strlen($this->php_prefix)));
 		}
 		private function get_db_file($db_name){
 			return $this->db_dir.$db_name.'.php';
